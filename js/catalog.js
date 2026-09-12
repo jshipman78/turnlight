@@ -1,5 +1,4 @@
 export const CAPS = [400, 900, 1800];
-
 export const ISSUE_TYPES = [
   { id: "paint", label: "Paint / walls" },
   { id: "floor", label: "Floor / carpet" },
@@ -11,15 +10,13 @@ export const ISSUE_TYPES = [
   { id: "safety", label: "Smoke / locks" },
   { id: "other", label: "Other" }
 ];
-
 export const ROOMS = ["Living","Kitchen","Bath","Primary bed","Bed 2","Hall / entry","Laundry","Exterior"];
-
 export const SKUS = [
   { id: "paint-gal", name: "Interior eggshell gallon", merchant: "Home Depot", price: 38, tags: ["paint"], cap: 400, affiliate: true },
   { id: "primer", name: "Stain-blocking primer", merchant: "Home Depot", price: 22, tags: ["paint"], cap: 400, affiliate: true },
   { id: "roller", name: "Roller + tray kit", merchant: "Home Depot", price: 16, tags: ["paint"], cap: 400, affiliate: true },
   { id: "patch", name: "Spackle + sanding sponge", merchant: "Home Depot", price: 12, tags: ["paint"], cap: 400, affiliate: true },
-  { id: "caulk", name: "Kitchen & bath caulk", merchant: "Home Depot", price: 8, tags: ["bath", "kitchen"], cap: 400, affiliate: true },
+  { id: "caulk", name: "Kitchen and bath caulk", merchant: "Home Depot", price: 8, tags: ["bath", "kitchen"], cap: 400, affiliate: true },
   { id: "blinds-vinyl", name: "2-inch vinyl blinds", merchant: "Home Depot", price: 29, tags: ["blind"], cap: 400, affiliate: true, per: "window" },
   { id: "rod", name: "Tension or wrap rod", merchant: "Amazon", price: 18, tags: ["blind"], cap: 400, affiliate: true },
   { id: "bulb-6", name: "2700K LED 6-pack", merchant: "Amazon", price: 14, tags: ["light"], cap: 400, affiliate: true },
@@ -53,7 +50,6 @@ export const SKUS = [
   { id: "linen-set", name: "Queen sheet set", merchant: "Target", price: 45, tags: ["other"], cap: 1800, affiliate: true },
   { id: "art-2", name: "Framed print pair", merchant: "Amazon", price: 36, tags: ["other"], cap: 1800, affiliate: false }
 ];
-
 export function buildCart(issues = [], cap = 0) {
   cap = Number(cap);
   if (!Number.isFinite(cap) || cap <= 0) return { items: [], total: 0, cap: 0 };
@@ -78,4 +74,27 @@ export function buildCart(issues = [], cap = 0) {
     total += sku.price * qty;
   }
   return { items: picked, total, cap };
+}
+export const STATE_MULT = {
+  CA: 1.18, NY: 1.16, HI: 1.22, MA: 1.12, WA: 1.1, CO: 1.08, IL: 1.05,
+  TX: 0.96, FL: 1.02, GA: 0.97, OH: 0.95, MI: 0.96, NC: 0.98, AZ: 1.01,
+  OK: 0.93, AR: 0.92, MS: 0.91, AL: 0.93, TN: 0.96, MO: 0.95
+};
+export function localMultiplier(state) {
+  if (!state) return 1;
+  return STATE_MULT[String(state).toUpperCase()] || 1;
+}
+export function priceLocal(sku, state) {
+  return Math.round(sku.price * localMultiplier(state));
+}
+export function storeSearchUrl(sku, zip) {
+  const q = encodeURIComponent(sku.name);
+  const z = encodeURIComponent(zip || "");
+  if (sku.merchant === "Home Depot") return "https://www.homedepot.com/s/" + q + (z ? "?storeZip=" + z : "");
+  if (sku.merchant === "Target") return "https://www.target.com/s?searchTerm=" + q;
+  if (sku.merchant === "Wayfair") return "https://www.wayfair.com/keyword.php?keyword=" + q;
+  return "https://www.amazon.com/s?k=" + q;
+}
+export function hdStoreFinder(zip) {
+  return "https://www.homedepot.com/l/search/" + encodeURIComponent(zip || "");
 }
