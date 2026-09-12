@@ -1,0 +1,8 @@
+{
+  "name": "Turnlight",
+  "short_name": "Turnlight",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f1ece3",
+  "theme_color": "#1a1814"
+}

@@ -3,9 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Turnlight — make-ready pack</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#1a1814" />
+  <title>Turnlight</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <meta name="description" content="Walk a vacant unit. Leave with a punch list, capped cart, and disclosed listing stills." />
+  <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
@@ -15,70 +17,72 @@
   <div class="app">
     <header class="top">
       <div class="brand">Turnlight<span>.</span></div>
-      <div class="meta">Turn pack</div>
+      <div class="meta" id="step-label">Locate</div>
     </header>
     <section class="hero">
-      <h1>Empty days cost more than paint.</h1>
-      <p>Walk the unit once. Get a punch list, a cap-respecting cart, vacancy math, and a labeled listing still.</p>
+      <h1>Pin the unit. Snap what is wrong.</h1>
+      <p>GPS finds the address. One photo per room. Local hardware prices fill the pack.</p>
       <div class="clock">
-        <div><small>Burn per day</small><b id="day-cost">$48</b></div>
-        <div><small>Already burned</small><b id="vacant-cost">$0</b></div>
+        <div><small>Where</small><b id="where-label">Not pinned</b></div>
         <div><small>Cart</small><b id="cart-total-hero">$0</b></div>
-        <div><small>Cart payback</small><b id="payback">—</b></div>
         <div><small>Issues</small><b id="issue-count">0</b></div>
-        <div><small>Rooms</small><b id="room-count">0</b></div>
+        <div><small>Local</small><b id="store-label">-</b></div>
       </div>
     </section>
     <section class="panel">
-      <h2>Unit</h2>
-      <div class="row"><label>Address / unit<input id="unit" type="text" /></label></div>
-      <div class="row two">
-        <label>Monthly rent<input id="rent" type="number" min="0" step="25" /></label>
-        <label>Days vacant<input id="days" type="number" min="0" step="1" /></label>
+      <h2>1. Location</h2>
+      <button class="btn sage" id="gps-btn" type="button">Use my location</button>
+      <div class="row" style="margin-top:12px">
+        <label>Or search an address
+          <input id="addr-q" type="search" placeholder="412 Maple, Greenville TX" autocomplete="street-address" />
+        </label>
       </div>
-      <div class="row"><label>Owner note<textarea id="notes"></textarea></label></div>
+      <div id="addr-hits" class="hits"></div>
+      <p class="place" id="place-line">No pin yet.</p>
+    </section>
+    <section class="panel">
+      <h2>2. Scan this room</h2>
+      <div class="rooms" id="rooms"></div>
+      <label class="snap">Open camera<input id="file-in" type="file" accept="image/*" capture="environment" /></label>
+      <div class="photos" id="photos"></div>
+      <p class="legal">After a snap, brightness and color suggest tags. You confirm.</p>
+    </section>
+    <section class="panel">
+      <h2>3. What is wrong</h2>
+      <div class="rooms" id="suggests"></div>
+      <div class="rooms" id="types"></div>
+      <button class="btn ghost" id="add-issue" type="button">Add tagged issue</button>
+      <div class="issues" id="issues" style="margin-top:12px"></div>
     </section>
     <section class="panel">
       <h2>Cap</h2>
       <div class="caps" id="caps">
-        <button class="cap" data-cap="400"><b>$400</b><span>Lean</span></button>
-        <button class="cap on" data-cap="900"><b>$900</b><span>Standard</span></button>
-        <button class="cap" data-cap="1800"><b>$1,800</b><span>Show</span></button>
+        <button class="cap" data-cap="400" type="button"><b>$400</b><span>Lean</span></button>
+        <button class="cap on" data-cap="900" type="button"><b>$900</b><span>Standard</span></button>
+        <button class="cap" data-cap="1800" type="button"><b>$1,800</b><span>Show</span></button>
       </div>
     </section>
-    <section class="panel"><h2>Rooms on this walk</h2><div class="rooms" id="rooms"></div></section>
-    <section class="panel"><h2>Photos</h2><div class="photos" id="photos"></div><p class="legal">Photos stay on this device in this prototype.</p></section>
     <section class="panel">
-      <h2>Issues</h2>
-      <div class="row two">
-        <label>Room<select id="issue-room"></select></label>
-        <label>Type<select id="issue-type"></select></label>
-      </div>
-      <div class="row"><label>Note<input id="issue-note" type="text" /></label></div>
-      <button class="btn sage" id="add-issue" type="button">Add issue</button>
-      <div class="issues" id="issues" style="margin-top:12px"></div>
-    </section>
-    <section class="panel">
-      <h2>Make-ready cart</h2>
+      <h2>Local cart</h2>
+      <p class="legal" id="price-note">Prices are planning estimates, adjusted for this ZIP. Not live shelf tags.</p>
+      <div id="stores"></div>
       <div id="cart"></div>
       <div class="totals"><span>Total / <span id="cap-label">$900</span></span><span id="cart-total">$0</span></div>
       <p id="under" class="legal"></p>
-      <p class="legal">Some links may earn a commission.</p>
     </section>
-    <section class="panel"><h2>Floor sketch</h2><div class="sketch" id="sketch"></div></section>
     <section class="panel">
       <h2>Listing still</h2>
       <div class="stage" id="stage"></div>
-      <p class="legal">Virtually staged — not current condition.</p>
+      <p class="legal">Virtually staged images are a visualization, not current condition.</p>
     </section>
     <div class="actions">
-      <button class="btn" id="print" type="button">Print / save pack</button>
-      <button class="btn ghost" id="sample" type="button">Load sample turn</button>
-      <button class="btn ghost" id="reset" type="button">Clear turn</button>
+      <button class="btn" id="print" type="button">Print pack</button>
+      <button class="btn ghost" id="sample" type="button">Demo walk</button>
+      <button class="btn ghost" id="reset" type="button">Clear</button>
     </div>
-    <p class="hint">$19 per turn · $29 / month</p>
+    <p class="hint">Photos and GPS stay on this phone. Nearby stores come from OpenStreetMap.</p>
   </div>
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status"></div>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
