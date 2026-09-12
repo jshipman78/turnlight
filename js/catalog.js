@@ -54,28 +54,28 @@ export const SKUS = [
   { id: "art-2", name: "Framed print pair", merchant: "Amazon", price: 36, tags: ["other"], cap: 1800, affiliate: false }
 ];
 
-export function buildCart(issues, cap) {
-  const needed = new Set(issues.map((i) => i.type));
+export function buildCart(issues = [], cap = 0) {
+  cap = Number(cap);
+  if (!Number.isFinite(cap) || cap <= 0) return { items: [], total: 0, cap: 0 };
+  const list = Array.isArray(issues) ? issues : [];
+  const needed = new Set(list.map((i) => i && i.type).filter(Boolean));
   if (!needed.size) needed.add("clean");
-  const windows = Math.max(1, issues.filter((i) => i.type === "blind").length);
+  const windows = Math.max(needed.has("blind") ? 1 : 0, list.filter((i) => i && i.type === "blind").length);
   const pool = SKUS.filter((s) => s.cap <= cap);
   const prefer = pool.filter((s) => s.tags.some((t) => needed.has(t)));
-  const rest = pool.filter((s) => !prefer.includes(s) && s.cap === 400);
+  const rest = needed.size === 1 && needed.has("clean")
+    ? pool.filter((s) => s.id === "cleaner" || s.id === "trash-bags" || s.id === "bulb-6")
+    : [];
   const picked = [];
   let total = 0;
   for (const sku of [...prefer, ...rest]) {
     if (picked.some((p) => p.id === sku.id)) continue;
-    const qty = sku.per === "window" ? windows : 1;
-    const line = sku.price * qty;
-    if (total + line > cap) {
-      if (qty > 1 && total + sku.price <= cap) {
-        picked.push({ ...sku, qty: 1 });
-        total += sku.price;
-      }
-      continue;
-    }
+    let qty = sku.per === "window" ? Math.max(1, windows) : 1;
+    if (sku.per === "window" && windows === 0) continue;
+    while (qty >= 1 && total + sku.price * qty > cap) qty -= 1;
+    if (qty < 1) continue;
     picked.push({ ...sku, qty });
-    total += line;
+    total += sku.price * qty;
   }
   return { items: picked, total, cap };
 }
